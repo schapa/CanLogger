@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
 	BSP_init();
 	LCD_Init();
 	LCD_SetPosition(0, 0);
-	DBGMSG_INFO("System Starting");
 
 	while (1) {
 		char buffer[128];

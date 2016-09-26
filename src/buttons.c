@@ -17,8 +17,7 @@
 #include "timers.h"
 
 #include "dbg_base.h"
-
-#if 1
+#if 0
 #include "dbg_trace.h"
 #endif
 

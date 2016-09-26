@@ -37,9 +37,6 @@ static struct {
 	uint32_t msec;
 } s_uptime;
 
-void System_setStatusLedControl(ledOutputControl_t control) {
-	s_systemLed = control;
-}
 
 void System_setStatus(systemStatus_t status) {
 
@@ -48,13 +45,14 @@ void System_setStatus(systemStatus_t status) {
 	}
 }
 
-void System_init(void) {
+void System_init(ledOutputControl_t control) {
 
 	RCC_ClocksTypeDef RCC_ClockFreq;
 	RCC_GetClocksFreq(&RCC_ClockFreq);
 	SysTick_Config(RCC_ClockFreq.HCLK_Frequency / TICKS_PER_SECOND);
 
 	System_setStatus(INFORM_INIT);
+	s_systemLed = control;
 }
 
 void SysTick_Handler(void) {

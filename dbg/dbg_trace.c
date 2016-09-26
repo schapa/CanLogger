@@ -12,30 +12,31 @@
 #include <stdio.h>
 #include <string.h>
 #include "tracer.h"
+#include "systemTimer.h"
 
-static char s_msgBuffer[4096];
-static int s_msgBufferSize = sizeof(s_msgBuffer);
+static char s_msgBuffer[1024];
+static size_t s_msgBufferSize = sizeof(s_msgBuffer);
 
 void dbgmsg(const char *color, const char *siverity, const char *file, const char *func, int line, const char *fmt, ...) {
 	uint32_t primask = __get_PRIMASK();
 	__disable_irq();
 
-	int occupied = 0;
+	size_t occupied = 0;
 	if (line) {
-		occupied = snprintf(s_msgBuffer, s_msgBufferSize, "[%8lu.%03lu] %s::%s (%d)%s %s: ",
+		occupied = (size_t)snprintf(s_msgBuffer, s_msgBufferSize, "[%8lu.%03lu] %s::%s (%d)%s %s: ",
 				System_getUptime(), System_getUptimeMs(), file, func, line, color, siverity);
 	} else {
-		occupied = snprintf(s_msgBuffer, s_msgBufferSize, "[%8lu.%03lu] %s ",
+		occupied = (size_t)snprintf(s_msgBuffer, s_msgBufferSize, "[%8lu.%03lu] %s ",
 				System_getUptime(), System_getUptimeMs(), color);
 	}
 	if (occupied < s_msgBufferSize) {
 		va_list ap;
 		va_start (ap, fmt);
-		occupied += vsnprintf(&s_msgBuffer[occupied], s_msgBufferSize - occupied, fmt, ap);
+		occupied += (size_t)vsnprintf(&s_msgBuffer[occupied], s_msgBufferSize - occupied, fmt, ap);
 		va_end (ap);
 	}
 	if (occupied < s_msgBufferSize) {
-		occupied += snprintf(&s_msgBuffer[occupied], s_msgBufferSize - occupied, ANSI_ESC_DEFAULT"\r\n");
+		occupied += (size_t)snprintf(&s_msgBuffer[occupied], s_msgBufferSize - occupied, ANSI_ESC_DEFAULT"\r\n");
 	}
 	if (occupied > s_msgBufferSize) {
 		char *trim = "...";

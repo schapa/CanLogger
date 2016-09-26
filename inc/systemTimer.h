@@ -25,8 +25,7 @@ typedef enum {
 
 typedef void (*ledOutputControl_t)(FunctionalState);
 
-void System_init(void);
-void System_setStatusLedControl(ledOutputControl_t);
+void System_init(ledOutputControl_t control);
 void System_setStatus(systemStatus_t);
 
 void System_delayMsDummy(uint32_t delay);

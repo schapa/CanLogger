@@ -9,6 +9,7 @@
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_can.h"
 #include "stm32f10x_exti.h"
+#include "stm32f10x_dbgmcu.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -19,16 +20,21 @@
 #include "tracer.h"
 #include "dbg_base.h"
 
+void EXTI15_10_IRQHandler(void);
+
 static void initialize_RCC(void);
 static void initialize_GPIO_LED(void);
 static void initialize_GPIO_Buttons(void);
 static void initialize_GPIO_Trace(void);
 static void initialize_GPIO_LCD(void);
 static void initialize_GPIO_CAN(void);
+static void initialize_GPIO_SPI(void);
 
 static uint8_t configure_CAN(void);
 static void configure_CAN_NVIC(void);
 static void configure_GPIO_NVIC(void);
+
+static void dumpSystemStartup(void);
 
 static void setSTBState(FunctionalState);
 static void setENState(FunctionalState);
@@ -42,20 +48,22 @@ static volatile EventQueue_p s_eventQueue = NULL;
 _Bool BSP_init(void) {
 	_Bool result = true;
 
-	System_init();
-	System_setStatusLedControl(BSP_SetRedLedState);
+	System_init(BSP_SetRedLedState);
 	initialize_RCC();
 	initialize_GPIO_LED();
 	initialize_GPIO_Buttons();
 	initialize_GPIO_Trace();
 	initialize_GPIO_LCD();
 	initialize_GPIO_CAN();
+	initialize_GPIO_SPI();
 	configure_CAN_NVIC();
 	configure_GPIO_NVIC();
 	Trace_InitUSART1();
 
 	System_setStatus(INFORM_INIT);
 	result |= configure_CAN();
+
+	dumpSystemStartup();
 
 	s_isInitialized = true;
 	return result;
@@ -87,6 +95,14 @@ void BSP_pendEvent(Event_p pEvent) {
 	s_eventQueue = Queue_getEvent(s_eventQueue, pEvent);
 	if (!primask) {
 		__enable_irq();
+	}
+}
+
+void EXTI15_10_IRQHandler(void) {
+	if (EXTI_GetFlagStatus(EXTI_Line13)) {
+		_Bool state = getERRState();
+		// can error
+		EXTI_ClearFlag(EXTI_Line13);
 	}
 }
 
@@ -137,6 +153,19 @@ static void initialize_GPIO_CAN(void) {
 	/* turn off transmitter */
 	setSTBState(ENABLE);
 	setENState(DISABLE);
+}
+
+static void initialize_GPIO_SPI(void) {
+	GPIO_InitTypeDef iface = {
+			GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15,  // SCK, MISO, MOSI
+			GPIO_Speed_2MHz,
+			GPIO_Mode_AF_PP
+	};
+	GPIO_Init(GPIOB, &iface);
+	// cs
+	iface.GPIO_Pin = GPIO_Pin_12;
+	iface.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOB, &iface);
 }
 
 static void initialize_GPIO_LED(void) {
@@ -291,6 +320,30 @@ static void configure_GPIO_NVIC(void) {
 	NVIC_Init(&nvic);
 
 	EXTI_Init(&exti);
+}
+
+static void dumpSystemStartup(void) {
+
+	RCC_ClocksTypeDef clock;
+	static const char *sourceName[] = {
+			"HSI",
+			"HSE",
+			"PLL"
+	};
+	const uint8_t clkSource = RCC_GetSYSCLKSource()>>2 & 0x03;
+	RCC_GetClocksFreq(&clock);
+	uint16_t mHz = (uint16_t)(clock.SYSCLK_Frequency/1000/1000);
+	uint16_t kHz = (uint16_t)(clock.SYSCLK_Frequency/1000%1000);
+	uint16_t Hz = (uint16_t)(clock.SYSCLK_Frequency%1000);
+
+	DBGMSG_INFO("\nSystem Starting");
+	DBGMSG_INFO("\t Device %p Revision %p", DBGMCU_GetDEVID(), DBGMCU_GetREVID());
+	DBGMSG_INFO("\t SysFreq %d.%03d.%03d Hz", mHz, kHz, Hz);
+	DBGMSG_INFO("\t ClkSource %s", sourceName[clkSource]);
+
+	if (!clkSource) {
+		DBGMSG_INFO("WARN: HSE Startup failed");
+	}
 }
 
 static _Bool sendData(uint32_t id, uint8_t *data, uint8_t size) {
