@@ -2,7 +2,7 @@
 #include "HD44780.h"
 #include "systemTimer.h"
 
-#define MIN_DELAY 3
+#define MIN_DELAY 1
 
 #define HD44780_GPIO    	GPIOA
 #define HD44780_APB 		RCC_APB2Periph_GPIOA
@@ -28,7 +28,7 @@
 #define Entry_mode_set				0b00000110
 
 
-static const unsigned char s_russianBitmap[] = {
+static const uint8_t s_russianBitmap[] = {
 		0x41, 0xA0, 0x42, 0xA1, 0xE0, 0x45,
 		0xA3, 0xA4, 0xA5, 0xA6, 0x4B, 0xA7,
 		0x4D, 0x48, 0x4F, 0xA8, 0x50, 0x43,
@@ -41,28 +41,28 @@ static const unsigned char s_russianBitmap[] = {
 		0xE5, 0xC0,	0xC1, 0xE6, 0xC2, 0xC3,
 		0xC4, 0xC5, 0xC6, 0xC7
 };
+#define UNICODE_BASE 0xC0
 
-
-static void configureGpio(void);
 static void setDataBits(uint8_t val);
 static void sendData(uint8_t data);
 static void sendCmd(uint8_t val);
 static void Control(uint32_t param, _Bool value);
 static void writeCmdNibble(uint8_t cmd);
 
-void Lcd_write_str(char *STRING)
+void LCD_Print(const char *str)
 {
-	char c;
-	while ((c = *STRING++) != 0){
-	if(c >= 192)
-		sendData(s_russianBitmap[c-192]);
-	else
-		sendData(c);
+	while (*str != '\0') {
+		if ((uint8_t)*str < UNICODE_BASE) {
+			sendData((uint8_t)*str);
+		} else {
+			sendData(s_russianBitmap [*str - UNICODE_BASE]);
+		}
+		str++;
 	}
 }
 
 
-void Lcd_goto(uint8_t x, uint8_t y)
+void LCD_SetPosition(uint8_t x, uint8_t y)
 {
 	x = (x > 1) ? 1 : x;
 	y = (y > 15) ? 0 : y;
@@ -70,9 +70,7 @@ void Lcd_goto(uint8_t x, uint8_t y)
 	sendCmd(pos);
 }
 
-void Init_lcd(void)
-{
-	configureGpio();
+void LCD_Init(void) {
 	System_delayMsDummy(150);
 	writeCmdNibble(Function_8BIT_set);
 	writeCmdNibble(Function_8BIT_set);
@@ -86,21 +84,12 @@ void Init_lcd(void)
 	sendCmd(Display_clear);
 	System_delayMsDummy(2*MIN_DELAY);
     sendCmd(Entry_mode_set);
-    Lcd_clear();
+    LCD_Clear();
 }
 
-void Lcd_clear(void)
+void LCD_Clear(void)
 {
 	sendCmd(Display_clear);
-}
-
-static void configureGpio(void) {
-//	RCC_APB2PeriphClockCmd(HD44780_APB, ENABLE);
-//	GPIO_InitTypeDef HD44780InitStruct;
-//	HD44780InitStruct.GPIO_Pin  = HD44780_PIN_E | HD44780_PIN_RS | HD44780_PIN_RW | HD44780_PIN_D4 | HD44780_PIN_D5 | HD44780_PIN_D6 | HD44780_PIN_D7;
-//	HD44780InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-//	HD44780InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init (HD44780_GPIO, &HD44780InitStruct);
 }
 
 static void setDataBits(uint8_t val) {
@@ -117,9 +106,7 @@ static void setDataBits(uint8_t val) {
 	HD44780_GPIO->BSRR |= newValue;
 }
 
-static void sendData(uint8_t data)
-{
-	configureGpio();
+static void sendData(uint8_t data) {
 	setDataBits(data>>4);
 	Control(E | RS,1);
 	System_delayMsDummy(MIN_DELAY);
@@ -134,7 +121,6 @@ static void sendData(uint8_t data)
 }
 
 static void sendCmd(uint8_t cmd) {
-	configureGpio();
 	Control(RS,0);
 	setDataBits(cmd>>4);
 	Control(E,1);
@@ -156,7 +142,6 @@ static void Control(uint32_t param, _Bool value) {
 }
 
 static void writeCmdNibble(uint8_t cmd) {
-	configureGpio();
 	setDataBits(cmd);
 	Control(RS,0);
 	Control(E,1);

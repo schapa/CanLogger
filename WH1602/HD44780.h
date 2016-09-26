@@ -9,10 +9,10 @@ extern "C" {
 #include "stm32f10x_gpio.h"
 #include "stm32f10x_rcc.h"
 
-void Init_lcd(void);
-void Lcd_clear(void);
-void Lcd_goto(uint8_t x, uint8_t y);
-void Lcd_write_str(char *STRING);
+void LCD_Init(void);
+void LCD_Clear(void);
+void LCD_SetPosition(uint8_t x, uint8_t y);
+void LCD_Print(const char *str);
 
 #ifdef __cplusplus
 }

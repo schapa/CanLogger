@@ -18,8 +18,8 @@ int main(int argc, char* argv[]) {
 	(void)argv;
 
 	BSP_init();
-	Init_lcd();
-	Lcd_goto(0, 0);
+	LCD_Init();
+	LCD_SetPosition(0, 0);
 	DBGMSG_INFO("System Starting");
 
 	while (1) {
@@ -28,13 +28,13 @@ int main(int argc, char* argv[]) {
 		BSP_pendEvent(&event);
 		if ((event.type == EVENT_SYSTICK) && (event.subType.systick == ES_SYSTICK_SECOND_ELAPSED)) {
 			sprintf(buffer, "Hello my tt %02d", event.data.intptr);
-			Lcd_goto(0, 0);
-			Lcd_write_str(buffer);
+			LCD_SetPosition(0, 0);
+			LCD_Print(buffer);
 		} else {
 			if (event.type == EVENT_EXTI) {
 				sprintf(buffer, "[%d] %d", event.data.intptr, event.subType.exti);
-				Lcd_goto(0, 0);
-				Lcd_write_str(buffer);
+				LCD_SetPosition(1, 0);
+				LCD_Print(buffer);
 				DBGMSG_INFO("EXTI %s", buffer);
 			}
 		}

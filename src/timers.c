@@ -56,7 +56,7 @@ uint32_t Timer_new(uint32_t tout, _Bool isPeriodic, onTimerFire_t cb, void *cbDa
 		if (!last->next) {
 			return 0;
 		}
-		last->next = last;
+		last = last->next;
 	}
 	last->id = handle;
 	last->timeout = tout;
@@ -118,6 +118,7 @@ void Timer_delete(uint32_t id) {
 	__disable_irq();
 	while (node) {
 		if ((node->id == id) && !(node->flags & IS_IN_CALLBACK)) {
+			// couldn't remove item callback
 			break;
 		}
 		prev = node;

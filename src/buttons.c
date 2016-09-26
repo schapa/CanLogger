@@ -16,8 +16,19 @@
 #include "systemTimer.h"
 #include "timers.h"
 
+#include "dbg_base.h"
+
+#if 1
+#include "dbg_trace.h"
+#endif
+
 #define KEY_DEBOUNCE_TOUT 50
 #define KEY_REPEAT_TOUT 250
+
+void EXTI0_IRQHandler(void);
+void EXTI1_IRQHandler(void);
+void EXTI2_IRQHandler(void);
+void EXTI9_5_IRQHandler(void);
 
 static struct {
 	uint32_t timerId;
@@ -75,10 +86,12 @@ static void onButtonIsr(Buttons_t button, _Bool state) {
 			s_buttons[button].state = state;
 			if (state) {
 				//press
+				DBGMSG_M("Press %d", button);
 				s_buttons[button].timerId = Timer_newArmed(KEY_DEBOUNCE_TOUT, false, onDebounceTimer, (void*)button);
 			} else {
 				Event_t event = { EVENT_EXTI, { ES_EXTI_UP }, .data.intptr = button };
 				BSP_queuePush(&event);
+				DBGMSG_M("Release %d", button);
 			}
 		}
 	}
@@ -89,6 +102,7 @@ static void onDebounceTimer(uint32_t id, void *data) {
 	if ((button < BUTTON_LAST) && (s_buttons[button].timerId == id)) {
 		Event_t event = { EVENT_EXTI, { ES_EXTI_DOWN }, .data.intptr = button };
 		BSP_queuePush(&event);
+		DBGMSG_M("Debounce %d. Send Press", button);
 		s_buttons[button].timerId = INVALID_HANDLE;
 		if (s_buttons[button].isRepeatable) {
 			s_buttons[button].timerId = Timer_newArmed(KEY_REPEAT_TOUT, true, onRepeatTimer, (void*)button);
@@ -101,5 +115,6 @@ static void onRepeatTimer(uint32_t id, void *data) {
 	if ((button < BUTTON_LAST) && (s_buttons[button].timerId == id)) {
 		Event_t event = { EVENT_EXTI, { ES_EXTI_REPEAT }, .data.intptr = button };
 		BSP_queuePush(&event);
+		DBGMSG_M("Repeat %d.", button);
 	}
 }

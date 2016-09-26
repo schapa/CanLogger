@@ -91,6 +91,6 @@ uint32_t System_getUptime(void) {
 }
 
 uint32_t System_getUptimeMs(void) {
-	return 0;
+	return s_uptimeTicks%TICKS_PER_SECOND;
 }
 
