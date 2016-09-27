@@ -28,6 +28,9 @@ void BSP_queuePush(Event_p pEvent);
 void BSP_pendEvent(Event_p pEvent);
 
 
+void BSP_LcdBacklight(_Bool);
+
+
 #ifdef __cplusplus
 }
 #endif

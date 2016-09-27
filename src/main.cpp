@@ -5,6 +5,7 @@
 #include "bsp.h"
 #include "HD44780.h"
 #include "systemTimer.h"
+#include "menu.h"
 
 #if 1
 #include "dbg_trace.h"
@@ -19,23 +20,27 @@ int main(int argc, char* argv[]) {
 
 	BSP_init();
 	LCD_Init();
-	LCD_SetPosition(0, 0);
+	Menu_Activate();
+	LCD_Update();
 
-	while (1) {
+	while (true) {
 		char buffer[128];
 		Event_t event;
 		BSP_pendEvent(&event);
-		if ((event.type == EVENT_SYSTICK) && (event.subType.systick == ES_SYSTICK_SECOND_ELAPSED)) {
-			sprintf(buffer, "Hello my tt %02d", event.data.intptr);
-			LCD_SetPosition(0, 0);
-			LCD_Print(buffer);
-		} else {
-			if (event.type == EVENT_EXTI) {
-				sprintf(buffer, "[%d] %d", event.data.intptr, event.subType.exti);
-				LCD_SetPosition(1, 0);
-				LCD_Print(buffer);
-				DBGMSG_INFO("EXTI %s", buffer);
-			}
+		switch (event.type) {
+			case EVENT_SYSTICK:
+				if (event.subType.systick == ES_SYSTICK_SECOND_ELAPSED) {
+//					sprintf(buffer, "Testing %02d", event.data.intptr);
+//					LCD_SetPosition(0, 0);
+//					LCD_SetText(buffer, NULL);
+				}
+				break;
+			case EVENT_EXTI:
+				Menu_HandleKey((Buttons_t)event.data.intptr, event.subType.exti);
+				break;
+			default:
+				break;
 		}
+		LCD_Update();
     }
 }

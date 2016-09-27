@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 typedef enum {
-	BUTTON_MENU,
+	BUTTON_BACK,
 	BUTTON_LEFT,
 	BUTTON_RIGHT,
 	BUTTON_OK,

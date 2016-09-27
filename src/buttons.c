@@ -34,7 +34,7 @@ static struct {
 	_Bool state;
 	const _Bool isRepeatable;
 } s_buttons[BUTTON_LAST]= {
-		[BUTTON_MENU] =  { .isRepeatable = false },
+		[BUTTON_BACK] =  { .isRepeatable = false },
 		[BUTTON_LEFT] =  { .isRepeatable = true },
 		[BUTTON_RIGHT] = { .isRepeatable = true },
 		[BUTTON_OK] = 	 { .isRepeatable = false },
@@ -64,7 +64,7 @@ void EXTI1_IRQHandler(void) {
 void EXTI2_IRQHandler(void) {
 	if (EXTI_GetFlagStatus(EXTI_Line2)) {
 		_Bool state = !GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_2);
-		onButtonIsr(BUTTON_MENU, state);
+		onButtonIsr(BUTTON_BACK, state);
 		EXTI_ClearFlag(EXTI_Line2);
 	}
 }

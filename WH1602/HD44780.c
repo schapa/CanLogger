@@ -1,6 +1,9 @@
 
 #include "HD44780.h"
 #include "systemTimer.h"
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
 
 #define MIN_DELAY 1
 
@@ -27,6 +30,7 @@
 #define Display_clear				0b00000001
 #define Entry_mode_set				0b00000110
 
+static char s_lcdTExtBuffer[LCD_HEIGTH][LCD_WIDTH + 1]; // + line end
 
 static const uint8_t s_russianBitmap[] = {
 		0x41, 0xA0, 0x42, 0xA1, 0xE0, 0x45,
@@ -48,19 +52,30 @@ static void sendData(uint8_t data);
 static void sendCmd(uint8_t val);
 static void Control(uint32_t param, _Bool value);
 static void writeCmdNibble(uint8_t cmd);
+static void writeString(const char *str);
 
-void LCD_Print(const char *str)
-{
-	while (*str != '\0') {
-		if ((uint8_t)*str < UNICODE_BASE) {
-			sendData((uint8_t)*str);
-		} else {
-			sendData(s_russianBitmap [*str - UNICODE_BASE]);
+void LCD_SetText(const char *line1, const char *line2) {
+	if (line1) {
+		size_t length = (size_t)snprintf(s_lcdTExtBuffer[0], LCD_WIDTH + 1, line1);
+		if (length < LCD_WIDTH) {
+			memset(&s_lcdTExtBuffer[0][length], ' ', LCD_WIDTH - length);
 		}
-		str++;
+		s_lcdTExtBuffer[0][LCD_WIDTH] = '\0';
+	}
+	if (line2) {
+		size_t length = (size_t)snprintf(s_lcdTExtBuffer[1], LCD_WIDTH + 1, line2);
+		if (length < LCD_WIDTH) {
+			memset(&s_lcdTExtBuffer[1][length], ' ', LCD_WIDTH - length);
+		}
+		s_lcdTExtBuffer[0][LCD_WIDTH] = '\0';
 	}
 }
-
+void LCD_Update(void) {
+	LCD_SetPosition(0, 0);
+	writeString(s_lcdTExtBuffer[0]);
+	LCD_SetPosition(1, 0);
+	writeString(s_lcdTExtBuffer[1]);
+}
 
 void LCD_SetPosition(uint8_t x, uint8_t y)
 {
@@ -71,7 +86,6 @@ void LCD_SetPosition(uint8_t x, uint8_t y)
 }
 
 void LCD_Init(void) {
-	System_delayMsDummy(150);
 	writeCmdNibble(Function_8BIT_set);
 	writeCmdNibble(Function_8BIT_set);
 	writeCmdNibble(Function_8BIT_set);
@@ -150,5 +164,16 @@ static void writeCmdNibble(uint8_t cmd) {
 	System_delayMsDummy(MIN_DELAY);
 	Control(RS | RW, 0);
 	System_delayMsDummy(MIN_DELAY);
+}
+
+void writeString(const char *str) {
+	while (*str != '\0') {
+		if ((uint8_t)*str < UNICODE_BASE) {
+			sendData((uint8_t)*str);
+		} else {
+			sendData(s_russianBitmap [*str - UNICODE_BASE]);
+		}
+		str++;
+	}
 }
 

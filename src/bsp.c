@@ -26,6 +26,7 @@ static void initialize_RCC(void);
 static void initialize_GPIO_LED(void);
 static void initialize_GPIO_Buttons(void);
 static void initialize_GPIO_Trace(void);
+static void initialize_GPIO_Power(void);
 static void initialize_GPIO_LCD(void);
 static void initialize_GPIO_CAN(void);
 static void initialize_GPIO_SPI(void);
@@ -53,6 +54,7 @@ _Bool BSP_init(void) {
 	initialize_GPIO_LED();
 	initialize_GPIO_Buttons();
 	initialize_GPIO_Trace();
+	initialize_GPIO_Power();
 	initialize_GPIO_LCD();
 	initialize_GPIO_CAN();
 	initialize_GPIO_SPI();
@@ -96,6 +98,11 @@ void BSP_pendEvent(Event_p pEvent) {
 	if (!primask) {
 		__enable_irq();
 	}
+}
+
+void BSP_LcdBacklight(_Bool state) {
+	BitAction val = state ? Bit_SET : Bit_RESET;
+	GPIO_WriteBit(GPIOA, GPIO_Pin_15, val);
 }
 
 void EXTI15_10_IRQHandler(void) {
@@ -203,14 +210,26 @@ static void initialize_GPIO_Trace(void) {
 	GPIO_Init(GPIOA, &iface);
 }
 
+static void initialize_GPIO_Power(void) {
+	GPIO_InitTypeDef iface = {
+			GPIO_Pin_6,
+			GPIO_Speed_2MHz,
+			GPIO_Mode_AF_PP
+	};
+	GPIO_Init(GPIOB, &iface);
+	GPIO_SetBits(GPIOB, GPIO_Pin_6); // hold power On
+}
+
 static void initialize_GPIO_LCD(void) {
 	GPIO_InitTypeDef iface = {
 			GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 |
-				GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6,
+				GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_15, // PA15 - backlight
 			GPIO_Speed_2MHz,
 			GPIO_Mode_Out_PP
 	};
 	GPIO_Init(GPIOA, &iface);
+	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
+	BSP_LcdBacklight(false);
 }
 
 static void setSTBState(FunctionalState state) {
