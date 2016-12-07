@@ -1,5 +1,6 @@
 
 export CPP := g++
+export LD := g++
 
 OUT_SFX := emulator
 BUILD_DIR :=$(BUILD_DIR)/$(OUT_SFX)
@@ -10,6 +11,7 @@ CFLAGS += \
 	-I./emulator/ \
 	
 SRC += \
+	./emulator/lcd.c \
 	./emulator/system.c \
 	./emulator/emulator.c \
 
