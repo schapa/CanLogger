@@ -84,7 +84,7 @@ $(FIRMWARE): $(PROGNAME)
 	$(SIZE) --format=berkeley "$(BUILD_ROOT)/$(PROGNAME)"
 
 clean::
-	@echo "[CLEAN] nRF firmware"
+	@echo "[CLEAN] $(PROGNAME)"
 	rm -f $(BUILD_ROOT)/$(PROGNAME) $(BUILD_ROOT)/$(FIRMWARE) $(BUILD_ROOT)/$(MAP_FILE)
 
 include $(ROOT_DIR)/build.mk

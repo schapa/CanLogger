@@ -5,7 +5,6 @@ export BUILD_ROOT :=$(BUILD_DIR)
 
 # common CFLAGS and LDFLAGS, BUILD_TYPE (debug, release)
 include common-defs.mk
-include build.mk
 
 include app.mk
 
@@ -24,3 +23,5 @@ firmware emulator:
 clean::
 	$(MAKE) -f firmware.mk $@
 	$(MAKE) -f emulator.mk $@
+	
+include build.mk
