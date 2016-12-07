@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 	LCD_Update();
 
 	while (true) {
-		char buffer[128];
+//		char buffer[128];
 		Event_t event;
 		BSP_pendEvent(&event);
 		switch (event.type) {

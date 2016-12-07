@@ -41,7 +41,7 @@ static void setSTBState(FunctionalState);
 static void setENState(FunctionalState);
 static _Bool getERRState(void);
 
-static _Bool sendData(uint32_t id, uint8_t *data, uint8_t size);
+//static _Bool sendData(uint32_t id, uint8_t *data, uint8_t size);
 
 static _Bool s_isInitialized = false;
 static volatile EventQueue_p s_eventQueue = NULL;
@@ -108,6 +108,7 @@ void BSP_LcdBacklight(_Bool state) {
 void EXTI15_10_IRQHandler(void) {
 	if (EXTI_GetFlagStatus(EXTI_Line13)) {
 		_Bool state = getERRState();
+		(void)state;
 		// can error
 		EXTI_ClearFlag(EXTI_Line13);
 	}
@@ -365,24 +366,24 @@ static void dumpSystemStartup(void) {
 	}
 }
 
-static _Bool sendData(uint32_t id, uint8_t *data, uint8_t size) {
-	CanTxMsg txMess = {
-			id,
-			id,
-			CAN_Id_Standard,
-			CAN_RTR_Data,
-			size,
-			{0}
-	};
-	if (size > 8 || id > 0x1FFFFFFF)
-		return false;
-
-	txMess.RTR = (size || data) ? CAN_RTR_Data : CAN_RTR_Remote;
-	txMess.IDE = id > 0x7FF ? CAN_Id_Extended : CAN_Id_Standard;
-	memcpy(txMess.Data, data, size);
-
-	return CAN_Transmit(CAN1, &txMess) != CAN_TxStatus_NoMailBox;
-}
+//static _Bool sendData(uint32_t id, uint8_t *data, uint8_t size) {
+//	CanTxMsg txMess = {
+//			id,
+//			id,
+//			CAN_Id_Standard,
+//			CAN_RTR_Data,
+//			size,
+//			{0}
+//	};
+//	if (size > 8 || id > 0x1FFFFFFF)
+//		return false;
+//
+//	txMess.RTR = (size || data) ? CAN_RTR_Data : CAN_RTR_Remote;
+//	txMess.IDE = id > 0x7FF ? CAN_Id_Extended : CAN_Id_Standard;
+//	memcpy(txMess.Data, data, size);
+//
+//	return CAN_Transmit(CAN1, &txMess) != CAN_TxStatus_NoMailBox;
+//}
 //void EXTI2_3_IRQHandler(void) {
 //	if (EXTI_GetFlagStatus(EXTI_Line2)) {
 //		/* wait at least 1 sec */
