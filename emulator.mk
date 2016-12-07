@@ -1,11 +1,17 @@
 
+export CPP := g++
+
 OUT_SFX := emulator
 BUILD_DIR :=$(BUILD_DIR)/$(OUT_SFX)
 
 PROGNAME := logger-$(OUT_SFX)
 
-
-SRC += 
+CFLAGS += \
+	-I./emulator/ \
+	
+SRC += \
+	./emulator/system.c \
+	./emulator/emulator.c \
 
 #
 # emulator specific CFLAGS
@@ -17,6 +23,7 @@ CFLAGS += \
 
 # emulator specific LIBS
 LDLIBS += \
+	-lc \
 	-lpthread \
 	-lrt
 

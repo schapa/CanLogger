@@ -12,9 +12,7 @@
 extern "C" {
 #endif
 
-#include "stm32f10x.h"
 #include <stdbool.h>
-#include "stm32f10x_can.h"
 #include "Queue.h"
 #include "buttons.h"
 

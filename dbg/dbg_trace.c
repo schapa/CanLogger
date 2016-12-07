@@ -13,13 +13,13 @@
 #include <string.h>
 #include "tracer.h"
 #include "systemTimer.h"
+#include "system.h"
 
 static char s_msgBuffer[1024];
 static size_t s_msgBufferSize = sizeof(s_msgBuffer);
 
 void dbgmsg(const char *color, const char *siverity, const char *file, const char *func, int line, const char *fmt, ...) {
-	uint32_t primask = __get_PRIMASK();
-	__disable_irq();
+	uint32_t primask = System_Lock();
 
 	size_t occupied = 0;
 	if (line) {
@@ -47,9 +47,7 @@ void dbgmsg(const char *color, const char *siverity, const char *file, const cha
 	if (newBuff) {
 		memcpy((void*)newBuff, (void*)s_msgBuffer, occupied);
 	}
-	if (!primask) {
-		__enable_irq();
-	}
+	System_Unlock(primask);
 	if (newBuff) {
 		Trace_dataAsync(newBuff, occupied);
 	}

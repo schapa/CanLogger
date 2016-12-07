@@ -7,25 +7,17 @@
 
 #include "memman.h"
 #include <stdlib.h>
-#include <stdint.h>
-#include "stm32f10x.h"
+#include "system.h"
 
 void *MEMMAN_malloc(size_t size) {
-	uint32_t primask = __get_PRIMASK();
-	__disable_irq();
+	int primask = System_Lock();
 	void *ptr = malloc(size);
-	if (!primask) {
-		__enable_irq();
-	}
+	System_Unlock(primask);
 	return ptr;
 }
 
-
 void MEMMAN_free(void *ptr) {
-	uint32_t primask = __get_PRIMASK();
-	__disable_irq();
+	int primask = System_Lock();
 	free (ptr);
-	if (!primask) {
-		__enable_irq();
-	}
+	System_Unlock(primask);
 }

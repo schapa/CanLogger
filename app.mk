@@ -6,6 +6,7 @@ CFLAGS += \
 	-I./inc \
 	-I./menu \
 	-I./system/inc/ \
+	-I./system/inc/cmsis/ \
 	-I./system/inc/diag \
 	-I./system/inc/stm32f1-stdperiph \
 	
@@ -16,7 +17,6 @@ CFLAGS += \
 	
 export SRC := \
 	./src/_write.c \
-	./src/buttons.c \
 	./src/main.cpp \
 	./src/memman.c \
 	./src/systemTimer.c \

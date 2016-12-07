@@ -13,6 +13,8 @@ export ASM_SRC :=
 
 SRC += \
 	./src/bsp.c \
+	./src/buttons.c \
+	./src/system.c \
 	./dbg/tracer.c \
 	./WH1602/HD44780.c \
 	
