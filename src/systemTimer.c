@@ -5,7 +5,8 @@
  *      Author: pavelgamov
  */
 
-#include "bsp.h"
+
+#include "system.h"
 #include "systemTimer.h"
 #include <stddef.h>
 #include "timers.h"
@@ -66,7 +67,7 @@ void SysTick_Handler(void) {
 		s_uptime.msec = 0;
 		s_uptime.sec++;
 		Event_t seconds = { EVENT_SYSTICK, { ES_SYSTICK_SECOND_ELAPSED }, .data.intptr = (intptr_t)s_uptime.sec };
-		BSP_queuePush(&seconds);
+		System_queuePush(&seconds);
 	}
 	if (s_delayDecrement && s_delayDecrement--){};
 

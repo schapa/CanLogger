@@ -12,6 +12,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "buttons.h"
+#include "system.h"
 #include "bsp.h"
 #include "systemTimer.h"
 #include "timers.h"
@@ -89,7 +91,7 @@ static void onButtonIsr(Buttons_t button, _Bool state) {
 				s_buttons[button].timerId = Timer_newArmed(KEY_DEBOUNCE_TOUT, false, onDebounceTimer, (void*)button);
 			} else {
 				Event_t event = { EVENT_EXTI, { ES_EXTI_UP }, .data.intptr = button };
-				BSP_queuePush(&event);
+				System_queuePush(&event);
 				DBGMSG_M("Release %d", button);
 			}
 		}
@@ -100,7 +102,7 @@ static void onDebounceTimer(uint32_t id, void *data) {
 	Buttons_t button = (Buttons_t)data;
 	if ((button < BUTTON_LAST) && (s_buttons[button].timerId == id)) {
 		Event_t event = { EVENT_EXTI, { ES_EXTI_DOWN }, .data.intptr = button };
-		BSP_queuePush(&event);
+		System_queuePush(&event);
 		DBGMSG_M("Debounce %d. Send Press", button);
 		s_buttons[button].timerId = INVALID_HANDLE;
 		if (s_buttons[button].isRepeatable) {
@@ -113,7 +115,7 @@ static void onRepeatTimer(uint32_t id, void *data) {
 	Buttons_t button = (Buttons_t)data;
 	if ((button < BUTTON_LAST) && (s_buttons[button].timerId == id)) {
 		Event_t event = { EVENT_EXTI, { ES_EXTI_REPEAT }, .data.intptr = button };
-		BSP_queuePush(&event);
+		System_queuePush(&event);
 		DBGMSG_M("Repeat %d.", button);
 	}
 }

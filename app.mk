@@ -16,6 +16,7 @@ CFLAGS += \
 	-DHSE_VALUE=8000000 \
 	
 export SRC := \
+	./src/system.c \
 	./src/_write.c \
 	./src/main.cpp \
 	./src/memman.c \

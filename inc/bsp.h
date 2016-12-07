@@ -13,18 +13,13 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
-#include "Queue.h"
-#include "buttons.h"
+#include "stm32f10x.h"
 
 /* Should be called Once */
 _Bool BSP_init(void);
 
 void BSP_SetRedLedState(FunctionalState);
 void BSP_SetGreenLedState(FunctionalState);
-
-void BSP_queuePush(Event_p pEvent);
-void BSP_pendEvent(Event_p pEvent);
-
 
 void BSP_LcdBacklight(_Bool);
 

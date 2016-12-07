@@ -13,7 +13,8 @@ extern "C" {
 #endif
 
 #include "menuItem.h"
-#include "bsp.h"
+#include "buttons.h"
+#include "system.h"
 
 void Menu_Activate(void);
 void Menu_Dectivate(void);

@@ -18,3 +18,13 @@ void System_Unlock(int primask) {
 		;
 	}
 }
+
+void RCC_GetClocksFreq(RCC_ClocksTypeDef *clk) {
+	if (!clk)
+		return;
+	clk->SYSCLK_Frequency = 72*1000*1000;
+	clk->HCLK_Frequency = clk->SYSCLK_Frequency/2;
+	clk->PCLK1_Frequency = clk->HCLK_Frequency/2;
+	clk->PCLK2_Frequency = clk->HCLK_Frequency/2;
+	clk->ADCCLK_Frequency = clk->PCLK2_Frequency/2;
+}

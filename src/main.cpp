@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 	while (true) {
 //		char buffer[128];
 		Event_t event;
-		BSP_pendEvent(&event);
+		System_pendEvent(&event);
 		switch (event.type) {
 			case EVENT_SYSTICK:
 				if (event.subType.systick == ES_SYSTICK_SECOND_ELAPSED) {

@@ -45,7 +45,6 @@ static _Bool getERRState(void);
 //static _Bool sendData(uint32_t id, uint8_t *data, uint8_t size);
 
 static _Bool s_isInitialized = false;
-static volatile EventQueue_p s_eventQueue = NULL;
 
 _Bool BSP_init(void) {
 	_Bool result = true;
@@ -80,25 +79,6 @@ void BSP_SetRedLedState(FunctionalState state) {
 void BSP_SetGreenLedState(FunctionalState state) {
 	BitAction val = (state == DISABLE) ? Bit_RESET : Bit_SET;
 	GPIO_WriteBit(GPIOB, GPIO_Pin_10, val);
-}
-
-void BSP_queuePush(Event_p pEvent) {
-	uint32_t primask = __get_PRIMASK();
-	__disable_irq();
-	s_eventQueue = Queue_pushEvent(s_eventQueue, pEvent);
-	if (!primask) {
-		__enable_irq();
-	}
-}
-
-void BSP_pendEvent(Event_p pEvent) {
-	while (!s_eventQueue);
-	uint32_t primask = __get_PRIMASK();
-	__disable_irq();
-	s_eventQueue = Queue_getEvent(s_eventQueue, pEvent);
-	if (!primask) {
-		__enable_irq();
-	}
 }
 
 void BSP_LcdBacklight(_Bool state) {
