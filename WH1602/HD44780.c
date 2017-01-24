@@ -4,8 +4,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
-#define MIN_DELAY 1
+#define DELAY 1
 
 #define HD44780_GPIO    	GPIOA
 #define HD44780_APB 		RCC_APB2Periph_GPIOA
@@ -31,6 +32,8 @@
 #define Entry_mode_set				0b00000110
 
 static char s_lcdTExtBuffer[LCD_HEIGTH][LCD_WIDTH + 1]; // + line end
+static _Bool s_isDirty = false;
+static uint32_t s_delayMod = 1;
 
 static const uint8_t s_russianBitmap[] = {
 		0x41, 0xA0, 0x42, 0xA1, 0xE0, 0x45,
@@ -54,6 +57,12 @@ static void Control(uint32_t param, _Bool value);
 static void writeCmdNibble(uint8_t cmd);
 static void writeString(const char *str);
 
+static void inline delayUs(uint32_t us) {
+	us *= s_delayMod;
+	for (uint32_t i = 0; i < us; i++)
+		__NOP();
+}
+
 void LCD_SetText(const char *line1, const char *line2) {
 	if (line1) {
 		size_t length = (size_t)snprintf(s_lcdTExtBuffer[0], LCD_WIDTH + 1, line1);
@@ -69,12 +78,16 @@ void LCD_SetText(const char *line1, const char *line2) {
 		}
 		s_lcdTExtBuffer[0][LCD_WIDTH] = '\0';
 	}
+	s_isDirty = !!line1 || !!line2;
 }
 void LCD_Update(void) {
+	if (!s_isDirty)
+		return;
 	LCD_SetPosition(0, 0);
 	writeString(s_lcdTExtBuffer[0]);
 	LCD_SetPosition(1, 0);
 	writeString(s_lcdTExtBuffer[1]);
+	s_isDirty = false;
 }
 
 void LCD_SetPosition(uint8_t x, uint8_t y)
@@ -86,17 +99,22 @@ void LCD_SetPosition(uint8_t x, uint8_t y)
 }
 
 void LCD_Init(void) {
+	RCC_ClocksTypeDef clk;
+	RCC_GetClocksFreq(&clk);
+	s_delayMod = clk.SYSCLK_Frequency/(1000*1000);
+	if (!System_getUptime())
+		while (System_getUptimeMs() < 16);
+
 	writeCmdNibble(Function_8BIT_set);
+	System_delayMsDummy(5);
 	writeCmdNibble(Function_8BIT_set);
+	delayUs(101);
 	writeCmdNibble(Function_8BIT_set);
 	writeCmdNibble(Function_4BIT_set);
 
 	sendCmd(Function_set);
-	System_delayMsDummy(2*MIN_DELAY);
 	sendCmd(Display_on_off_control);
-	System_delayMsDummy(2*MIN_DELAY);
 	sendCmd(Display_clear);
-	System_delayMsDummy(2*MIN_DELAY);
     sendCmd(Entry_mode_set);
     LCD_Clear();
 }
@@ -123,14 +141,14 @@ static void setDataBits(uint8_t val) {
 static void sendData(uint8_t data) {
 	setDataBits(data>>4);
 	Control(E | RS,1);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(E,0);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	setDataBits(data);
 	Control(E | RS,1);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(E | RW,0);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(RS,0);
 }
 
@@ -138,14 +156,14 @@ static void sendCmd(uint8_t cmd) {
 	Control(RS,0);
 	setDataBits(cmd>>4);
 	Control(E,1);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(E,0);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	setDataBits(cmd);
 	Control(E,1);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(E | RS | RW, 0);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 }
 
 static void Control(uint32_t param, _Bool value) {
@@ -159,11 +177,11 @@ static void writeCmdNibble(uint8_t cmd) {
 	setDataBits(cmd);
 	Control(RS,0);
 	Control(E,1);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(E,0);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 	Control(RS | RW, 0);
-	System_delayMsDummy(MIN_DELAY);
+	delayUs(DELAY);
 }
 
 void writeString(const char *str) {
