@@ -6,10 +6,10 @@
  */
 
 
-#include "menu.h"
 #include <assert.h>
 #include "HD44780.h"
 #include "dbg_base.h"
+#include "menuNode.h"
 
 #if 1
 #include "dbg_trace.h"

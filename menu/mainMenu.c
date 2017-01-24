@@ -5,9 +5,9 @@
  *      Author: shapa
  */
 
-#include "menu.h"
 #include "memman.h"
 #include "dbg_base.h"
+#include "menuNode.h"
 
 #if 1
 #include "dbg_trace.h"

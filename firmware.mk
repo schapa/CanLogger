@@ -49,7 +49,8 @@ CFLAGS += \
 	-I./system/inc/cmsis \
 	-I./system/inc/cortexm \
 
-CFLAGS += \
+CFLAGS += -O0 \
+	-ggdb \
 	-mcpu=cortex-m3 \
 	-mthumb -mabi=aapcs \
 	-mfloat-abi=soft \

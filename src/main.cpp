@@ -5,7 +5,7 @@
 #include "bsp.h"
 #include "HD44780.h"
 #include "systemTimer.h"
-#include "menu.h"
+#include "menuNode.h"
 
 #if 1
 #include "dbg_trace.h"
@@ -17,6 +17,10 @@ int main(int argc, char* argv[]) {
 
 	(void)argc;
 	(void)argv;
+
+//	FILE *f = fopen("aaa","w+");
+//	if (!f)
+//		return -1;
 
 	BSP_init();
 	LCD_Init();
